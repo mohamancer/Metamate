@@ -1,50 +1,31 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import React from 'react';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import Navigation from '../components/Navigation';
+import MainPage from '../pages/Main';
+import Post from '../pages/Post';
+import Ads from '../pages/Ads';
+import Chatbot from '../components/Chatbot';
 import './App.css';
 
-function Hello() {
+/**
+ * Renders the main application.
+ *
+ * @returns The rendered application component.
+ */
+export default function App(): React.JSX.Element {
   return (
-    <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
+    <HashRouter>
+      <div>
+        <Navigation />
+        <div style={{ flex: 1, padding: '20px' }}>
+          <Routes>
+            <Route path="/" Component={MainPage} />
+            <Route path="/Post" Component={Post} />
+            <Route path="/Ads" Component={Ads} />
+          </Routes>
+        </div>
+        <Chatbot />
       </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
-    </div>
-  );
-}
-
-export default function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
+    </HashRouter>
   );
 }
