@@ -15,17 +15,15 @@ import './App.css';
 export default function App(): React.JSX.Element {
   return (
     <HashRouter>
-      <div>
-        <Navigation />
-        <div style={{ flex: 1, padding: '20px' }}>
-          <Routes>
-            <Route path="/" Component={MainPage} />
-            <Route path="/Post" Component={Post} />
-            <Route path="/Ads" Component={Ads} />
-          </Routes>
-        </div>
-        <Chatbot />
+      <Navigation />
+      <div style={{ flex: 1, padding: '20px' }}>
+        <Routes>
+          <Route path="/" Component={MainPage} />
+          <Route path="/Post" Component={Post} />
+          <Route path="/Ads" Component={Ads} />
+        </Routes>
       </div>
+      <Chatbot />
     </HashRouter>
   );
 }

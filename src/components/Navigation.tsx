@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../../dist/output.css';
 
 function Navigation() {
   return (
