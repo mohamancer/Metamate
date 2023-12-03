@@ -13,8 +13,20 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import OpenAI from 'openai';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const store = new Store();
+let openai: OpenAI;
+
+if (store.has('openAI_User_APIKey')) {
+  const openAIKey = store.get('openAI_User_APIKey') as string;
+  openai = new OpenAI({
+    apiKey: openAIKey,
+  });
+}
 
 class AppUpdater {
   constructor() {
@@ -113,3 +125,28 @@ app
     });
   })
   .catch(console.log);
+
+ipcMain.handle('sendChatAndGetResponse', async (_, context) => {
+  const content = {
+    model: 'gpt-3.5-turbo',
+    messages: context,
+    temperature: 0.7,
+  };
+  try {
+    const response = await openai.chat.completions.create(content);
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error('Error sending chat and getting response:', error);
+    return null;
+  }
+});
+
+ipcMain.on('setApiKey', (_, key) => {
+  store.set('openAI_User_APIKey', key);
+  openai = new OpenAI({
+    apiKey: key,
+  });
+});
+ipcMain.handle('getApiKey', async () => {
+  return store.get('openAI_User_APIKey', '');
+});

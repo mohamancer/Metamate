@@ -3,10 +3,25 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+type Message = {
+  role: string;
+  content: string;
+};
 
-const electronHandler = {};
+const electronHandler = {
+  sendChatAndGetResponse: async (
+    context: Message[],
+  ): Promise<string | null> => {
+    return ipcRenderer.invoke('sendChatAndGetResponse', context);
+  },
+  setApiKey: (key: string): void => {
+    ipcRenderer.send('setApiKey', key);
+  },
+  getApiKey: async (): Promise<string | null> => {
+    return ipcRenderer.invoke('getApiKey');
+  },
+};
 
-contextBridge.exposeInMainWorld('api', electronHandler);
+contextBridge.exposeInMainWorld('electron', electronHandler);
 
 export type ElectronHandler = typeof electronHandler;
