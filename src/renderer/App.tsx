@@ -1,7 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Navigation from '../components/Navigation';
-import MainPage from '../pages/Main';
 import Post from '../pages/Post';
 import Ads from '../pages/Ads';
 import Chatbot from '../components/Chatbot';
@@ -19,8 +18,7 @@ export default function App(): React.JSX.Element {
         <Navigation />
         <div className="grow">
           <Routes>
-            <Route path="/" Component={MainPage} />
-            <Route path="/Post" Component={Post} />
+            <Route path="/" Component={Post} />
             <Route path="/Ads" Component={Ads} />
           </Routes>
         </div>

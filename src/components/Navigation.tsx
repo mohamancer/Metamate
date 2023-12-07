@@ -1,6 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaKey, FaBuysellads, FaHome } from 'react-icons/fa';
+import {
+  FaKey,
+  FaBuysellads,
+  FaHome,
+  FaFacebook,
+  FaUserSecret,
+} from 'react-icons/fa';
 import { MdPostAdd } from 'react-icons/md';
 import { TbBrandOpenai } from 'react-icons/tb';
 
@@ -23,19 +29,30 @@ function SidebarIcon({ icon, text }: Props) {
   );
 }
 function Navigation() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isOpenAi, setIsOpenAi] = useState(false);
+  const [isFacebook, setIsFacebook] = useState(false);
+  const [openAiKey, setOpenAiKey] = useState('');
+  const [facebookAppID, setFacebookAppID] = useState('');
+  const [facebookSecret, setFacebookSecret] = useState('');
+  const facebookAppIDRef = useRef<HTMLInputElement>(null);
+  const facebookSecretRef = useRef<HTMLInputElement>(null);
+  const openAiRef = useRef<HTMLInputElement>(null);
 
-  async function fetchMyAPI() {
-    const response = await window.electron.getApiKey();
-    if (response) {
-      setApiKey(response);
+  async function fetchData() {
+    const [apiKey, appID, secret] = await window.electron.getData();
+    if (apiKey) {
+      setOpenAiKey(apiKey);
+    }
+    if (appID) {
+      setFacebookAppID(appID);
+    }
+    if (secret) {
+      setFacebookSecret(secret);
     }
   }
 
   useEffect(() => {
-    fetchMyAPI();
+    fetchData();
   }, []);
   return (
     <nav
@@ -52,20 +69,72 @@ function Navigation() {
       <Link to="/Ads" className="">
         <SidebarIcon icon={<FaBuysellads size="28" />} text="اعلانات" />
       </Link>
+
       <div className="mt-auto">
-        <button type="button" onClick={() => setIsOpen(!isOpen)}>
+        <button type="button" onClick={() => setIsFacebook(!isFacebook)}>
+          <SidebarIcon
+            icon={<FaFacebook size="28" />}
+            text="Click to enter AppID key."
+          />
+        </button>
+        <button type="button" onClick={() => setIsOpenAi(!isOpenAi)}>
           <SidebarIcon
             icon={<TbBrandOpenai size="28" />}
             text="Click to enter API key."
           />
         </button>
       </div>
-      {isOpen ? (
+      {isFacebook ? (
+        <div className="absolute bottom-20 ml-16 flex h-16 w-auto items-center">
+          <div className="flex flex-col">
+            <input
+              ref={facebookAppIDRef}
+              type="text"
+              defaultValue={facebookAppID || ''}
+              placeholder="Enter AppID here"
+              className="shaow-md translate-all w-auto min-w-max scale-100 rounded-md bg-gray-900 p-2 text-sm font-bold text-white"
+            />
+            <input
+              ref={facebookSecretRef}
+              type="text"
+              defaultValue={facebookSecret || ''}
+              placeholder="Enter Secret here"
+              className="shaow-md translate-all mt-2 w-auto min-w-max scale-100 rounded-md bg-gray-900 p-2 text-sm font-bold text-white"
+            />
+          </div>
+          <button
+            type="button"
+            className="ml-2 flex h-12 w-12 cursor-pointer  items-center justify-center
+                 rounded-3xl border-white bg-gray-800 text-green-500
+                 shadow-lg transition-all duration-300 ease-linear hover:rounded-xl hover:bg-green-600 hover:text-white"
+            onClick={() => {
+              if (
+                facebookAppIDRef.current &&
+                facebookAppIDRef.current.value.trim() !== '' &&
+                facebookSecretRef.current &&
+                facebookSecretRef.current.value.trim() !== ''
+              ) {
+                window.electron.setFacebookData(
+                  facebookAppIDRef.current.value,
+                  facebookSecretRef.current.value,
+                );
+                setFacebookAppID(facebookAppIDRef.current.value);
+                setFacebookSecret(facebookSecretRef.current.value);
+                console.log('here');
+                // toast.success('API key set successfully!');
+              }
+            }}
+          >
+            <FaUserSecret size="24" />
+          </button>
+        </div>
+      ) : null}
+      {isOpenAi ? (
         <div className="absolute bottom-0 ml-16 flex h-16 w-auto items-center">
           <input
-            ref={inputRef}
+            ref={openAiRef}
             type="text"
-            defaultValue={apiKey || ''}
+            defaultValue={openAiKey || ''}
             placeholder="Enter API key here"
             className="shaow-md translate-all w-auto min-w-max scale-100 rounded-md bg-gray-900 p-2 text-sm font-bold text-white"
           />
@@ -75,9 +144,9 @@ function Navigation() {
                  rounded-3xl border-white bg-gray-800 text-green-500
                  shadow-lg transition-all duration-300 ease-linear hover:rounded-xl hover:bg-green-600 hover:text-white"
             onClick={() => {
-              if (inputRef.current && inputRef.current.value.trim() !== '') {
-                window.electron.setApiKey(inputRef.current.value);
-                setApiKey(inputRef.current.value);
+              if (openAiRef.current && openAiRef.current.value.trim() !== '') {
+                window.electron.setOpenAiKey(openAiRef.current.value);
+                setOpenAiKey(openAiRef.current.value);
                 // toast.success('API key set successfully!');
               }
             }}

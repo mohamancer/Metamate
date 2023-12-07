@@ -14,11 +14,14 @@ const electronHandler = {
   ): Promise<string | null> => {
     return ipcRenderer.invoke('sendChatAndGetResponse', context);
   },
-  setApiKey: (key: string): void => {
-    ipcRenderer.send('setApiKey', key);
+  setOpenAiKey: (key: string): void => {
+    ipcRenderer.send('setOpenAiKey', key);
   },
-  getApiKey: async (): Promise<string | null> => {
-    return ipcRenderer.invoke('getApiKey');
+  getData: async (): Promise<string[]> => {
+    return ipcRenderer.invoke('getData');
+  },
+  setFacebookData: (appID: string, secret: string): void => {
+    ipcRenderer.send('setFacebookData', appID, secret);
   },
 };
 
