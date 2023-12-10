@@ -20,11 +20,17 @@ const electronHandler = {
   getData: async (): Promise<string[]> => {
     return ipcRenderer.invoke('getData');
   },
-  setFacebookData: (appID: string, secret: string): void => {
-    ipcRenderer.send('setFacebookData', appID, secret);
+  setFacebookData: (
+    appID: string,
+    secret: string,
+    accessToken: string,
+  ): void => {
+    ipcRenderer.send('setFacebookData', appID, secret, accessToken);
+  },
+  pageMap: (mapCallback: (event: IpcRendererEvent, ...args: any[]) => void) => {
+    ipcRenderer.on('pageMap', mapCallback);
   },
 };
-
 contextBridge.exposeInMainWorld('electron', electronHandler);
 
 export type ElectronHandler = typeof electronHandler;

@@ -3,9 +3,23 @@ import { CiSquareRemove } from 'react-icons/ci';
 
 function Post() {
   const [selectedFile, setSelectedFile] = useState<File | undefined>();
+  const [pages, setPages] = useState<
+    Record<string, { id: string; accessToken: string }> | undefined
+  >({});
   const [preview, setPreview] = useState<string | undefined>('');
   const formRef = useRef<HTMLFormElement>(null);
-
+  useEffect(() => {
+    window.electron.pageMap(
+      (
+        _: any,
+        map: React.SetStateAction<
+          Record<string, { id: string; accessToken: string }> | undefined
+        >,
+      ) => {
+        setPages(map);
+      },
+    );
+  }, []);
   // create a preview as a side effect, whenever selected file is changed
   useEffect(() => {
     if (!selectedFile) {
@@ -29,6 +43,7 @@ function Post() {
     // I've kept this example simple by using the first image instead of multiple
     setSelectedFile(e.target.files[0]);
   };
+
   return (
     <form
       ref={formRef}
@@ -44,8 +59,10 @@ function Post() {
       <div className="flex h-60 w-60 flex-col px-2">
         Page
         <select className="mt-2 resize-none rounded-lg border-gray-600 bg-gray-700 p-2 text-sm text-gray-400 shadow-transparent outline-0 focus:border-none">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((item) => (
-            <option>{item}</option>
+          {(Object.keys(pages || {}) as Array<string>).map((pageName) => (
+            <option key={pageName} value={pageName}>
+              {pageName}
+            </option>
           ))}
         </select>
       </div>

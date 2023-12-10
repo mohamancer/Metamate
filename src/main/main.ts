@@ -91,7 +91,48 @@ const createWindow = async () => {
 /**
  * Add event listeners...
  */
+async function performTaskAndSendResult() {
+  try {
+    const userAccessToken = store.get('accessToken', '');
 
+    if (!userAccessToken) {
+      return;
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/me/accounts?fields=access_token,id,name&access_token=${userAccessToken}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // You can include other headers if needed
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+
+    const pageMap: Record<string, { id: string; access_token: string }> = {};
+    responseData.data.forEach(
+      (page: { name: string; id: string; access_token: string }) => {
+        pageMap[page.name] = {
+          id: page.id,
+          access_token: page.access_token,
+        };
+      },
+    );
+
+    // Send the result to all render processes
+    mainWindow?.webContents.send('pageMap', pageMap);
+  } catch (error) {
+    console.error('Error fetching data: ', error);
+    throw error;
+  }
+}
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
@@ -104,6 +145,10 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    mainWindow?.webContents.once('did-finish-load', () => {
+      performTaskAndSendResult();
+      setInterval(performTaskAndSendResult, 3600000);
+    });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
@@ -133,14 +178,16 @@ ipcMain.on('setOpenAiKey', (_, key) => {
     apiKey: key,
   });
 });
-ipcMain.on('setFacebookData', (_, appID, secret) => {
+ipcMain.on('setFacebookData', (_, appID, secret, accessToken) => {
   store.set('facebookAppID', appID);
   store.set('facebookSecret', secret);
+  store.set('accessToken', accessToken);
 });
-ipcMain.handle('getData', (): [string, string, string] => {
+ipcMain.handle('getData', (): [string, string, string, string] => {
   return [
     store.get('openAI_User_APIKey', '') as string,
     store.get('facebookAppID', '') as string,
     store.get('facebookSecret', '') as string,
+    store.get('accessToken', '') as string,
   ];
 });
