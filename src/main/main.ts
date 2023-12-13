@@ -116,23 +116,55 @@ async function performTaskAndSendResult() {
 
     const responseData = await response.json();
 
-    const pageMap: Record<string, { id: string; access_token: string }> = {};
-    responseData.data.forEach(
-      (page: { name: string; id: string; access_token: string }) => {
-        pageMap[page.name] = {
-          id: page.id,
-          access_token: page.access_token,
-        };
-      },
+    const pageMap: Record<
+      string,
+      { id: string; access_token: string; imageUrl?: string }
+    > = {};
+
+    // Iterate through each page in the response
+    await Promise.all(
+      responseData.data.map(
+        async (page: { name: string; id: string; access_token: string }) => {
+          try {
+            // Make a request to get the page image
+            const pageImageResponse = await fetch(
+              `https://graph.facebook.com/v18.0/${page.id}?fields=picture&access_token=${page.access_token}`,
+            );
+
+            if (!pageImageResponse.ok) {
+              throw new Error(
+                `HTTP error! Status: ${pageImageResponse.status}`,
+              );
+            }
+
+            // Extract the image URL from the response
+            const pageImageURL = (await pageImageResponse.json()).picture.data
+              .url;
+
+            // Add the image URL to the pageMap
+            pageMap[page.name] = {
+              id: page.id,
+              access_token: page.access_token,
+              imageUrl: pageImageURL,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching image for page ${page.name}: `,
+              error,
+            );
+          }
+        },
+      ),
     );
 
-    // Send the result to all render processes
+    // Send the pageMap to the renderer
     mainWindow?.webContents.send('pageMap', pageMap);
   } catch (error) {
     console.error('Error fetching data: ', error);
     throw error;
   }
 }
+
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed

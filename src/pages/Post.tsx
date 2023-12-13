@@ -4,16 +4,23 @@ import { CiSquareRemove } from 'react-icons/ci';
 function Post() {
   const [selectedFile, setSelectedFile] = useState<File | undefined>();
   const [pages, setPages] = useState<
-    Record<string, { id: string; accessToken: string }> | undefined
+    | Record<string, { id: string; access_token: string; imageUrl: string }>
+    | undefined
   >({});
+  const [selectedPage, setSelectedPage] = useState<string | undefined>();
   const [preview, setPreview] = useState<string | undefined>('');
   const formRef = useRef<HTMLFormElement>(null);
+
   useEffect(() => {
     window.electron.pageMap(
       (
         _: any,
         map: React.SetStateAction<
-          Record<string, { id: string; accessToken: string }> | undefined
+          | Record<
+              string,
+              { id: string; access_token: string; imageUrl: string }
+            >
+          | undefined
         >,
       ) => {
         setPages(map);
@@ -56,15 +63,26 @@ function Post() {
       >
         <CiSquareRemove size={18} />
       </button>
-      <div className="flex h-60 w-60 flex-col px-2">
+      <div className="flex flex-col px-2">
         Page
-        <select className="mt-2 resize-none rounded-lg border-gray-600 bg-gray-700 p-2 text-sm text-gray-400 shadow-transparent outline-0 focus:border-none">
+        <select
+          onChange={(event) => setSelectedPage(event.target.value)}
+          className="mt-2 w-40 resize-none rounded-lg border-gray-600 bg-gray-700 p-2 text-sm text-gray-400 shadow-transparent outline-0 focus:border-none"
+        >
+          <option value="">Select a page</option>
           {(Object.keys(pages || {}) as Array<string>).map((pageName) => (
             <option key={pageName} value={pageName}>
               {pageName}
             </option>
           ))}
         </select>
+        {selectedPage && pages && (
+          <img
+            src={pages[selectedPage].imageUrl}
+            alt={selectedPage}
+            className="mt-2 rounded-lg "
+          />
+        )}
       </div>
       <div className="flex h-60 w-60 flex-col px-2">
         Post
