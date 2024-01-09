@@ -2,6 +2,8 @@
 /* eslint no-unused-vars: off */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { formData } from '../pages/Post';
+import { PostResponse } from './PostUtil';
 
 type Message = {
   role: string;
@@ -29,6 +31,12 @@ const electronHandler = {
   },
   pageMap: (mapCallback: (event: IpcRendererEvent, ...args: any[]) => void) => {
     ipcRenderer.on('pageMap', mapCallback);
+  },
+  removePageListener: () => {
+    ipcRenderer.removeAllListeners('pageMap');
+  },
+  postForms: async (forms: formData[]): Promise<PostResponse[]> => {
+    return ipcRenderer.invoke('postForms', forms);
   },
 };
 contextBridge.exposeInMainWorld('electron', electronHandler);

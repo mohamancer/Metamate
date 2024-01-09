@@ -55,7 +55,7 @@ function Navigation() {
   }, []);
   return (
     <nav
-      className="left-0 top-0 m-0 flex h-screen
+      className="sticky left-0 top-0 z-10 m-0 flex h-screen
                  w-16 flex-col
                  bg-gray-900 text-white shadow"
     >

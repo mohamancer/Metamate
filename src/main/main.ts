@@ -10,11 +10,13 @@
  */
 import path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcRendererEvent } from 'electron';
 import OpenAI from 'openai';
 import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { PostResponse, postToFeed, postWithImage } from './PostUtil';
+import { formData } from '../pages/Post';
 
 const store = new Store();
 let openai: OpenAI;
@@ -223,3 +225,37 @@ ipcMain.handle('getData', (): [string, string, string, string] => {
     store.get('accessToken', '') as string,
   ];
 });
+
+const postAllForms = async (
+  _: any,
+  validForms: formData[],
+): Promise<PostResponse[]> => {
+  // Use Promise.all to handle multiple asynchronous requests concurrently
+  return Promise.all(
+    validForms.map(async (form) => {
+      try {
+        if (form.imagePath) {
+          const response = await postWithImage(
+            form.pages[form.page].id,
+            form.pages[form.page].access_token,
+            form.text,
+            form.imagePath,
+          );
+          return { ...response, postId: form.id };
+        }
+        const response = await postToFeed(
+          form.pages[form.page].id,
+          form.pages[form.page].access_token,
+          form.text,
+        );
+        return { ...response, postId: form.id };
+      } catch (error: any) {
+        // You may want to handle errors or inform the renderer process about failures
+        console.error('Error posting form:', error);
+        return { success: false, postId: form.id };
+      }
+    }),
+  );
+};
+
+ipcMain.handle('postForms', postAllForms);

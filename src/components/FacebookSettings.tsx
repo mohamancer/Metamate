@@ -40,7 +40,7 @@ function FacebookSettings({
           type="text"
           defaultValue={facebookAppID || ''}
           placeholder="Enter AppID here"
-          className="translate-all w-auto min-w-max scale-100 rounded-md bg-gray-900 p-2 text-sm font-bold text-white shadow-md"
+          className="translate-all mt-2 w-auto min-w-max scale-100 rounded-md bg-gray-900 p-2 text-sm font-bold text-white shadow-md"
         />
         <input
           ref={facebookSecretRef}
